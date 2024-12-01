@@ -21,14 +21,14 @@ REDIS_DB = redis.StrictRedis(
 pdf_source = '/pdf_source/'
 pdf_stemped = '/pdf_stemped/'
 created_at = datetime.now(pytz.timezone(
-    'Asia/Jakarta')).strftime('%Y-%m-%d %H-%M-%S')
+    'Asia/Jakarta')).strftime('%Y%m%d%H%M%S')
 qr_id = str(uuid.uuid4())
 
 
 def download_file(id, pdf_url):
     try:
         response = requests.get(pdf_url)
-        output_path = f"{pdf_source}{created_at.isoformat()}_{id}.pdf"
+        output_path = f"{pdf_source}{str(created_at)}_{id}.pdf"
         if response.status_code == 200:
             with open(output_path, "wb") as f:
                 f.write(response.content)
@@ -50,10 +50,10 @@ def insert_to_redis(id, qr_url, pdf_url, qr_position_x, qr_position_y, api_callb
         "STATUS": "SUCCESS",
         "FLAG": "N",
         "API_CALLBACK": api_callback,
-        "PATH_SOURCE": f"{pdf_source}{created_at.isoformat()}_{id}.pdf",
+        "PATH_SOURCE": f"{pdf_source}{str(created_at)}_{id}.pdf",
         "PATH_STEMPED": "",
         "STATUS_STEMPED": "",
-        "CREATED_AT": created_at.isoformat(),
+        "CREATED_AT": str(created_at),
         "UPDATED_AT": "",
     })
 
