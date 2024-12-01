@@ -9,6 +9,7 @@ from io import BytesIO
 import qrcode
 import fitz
 import threading
+import time
 
 
 app = Flask(__name__)
@@ -110,9 +111,10 @@ def insert_to_redis(id, qr_url, pdf_url, qr_position_x, qr_position_y, api_callb
 
 def process_stemp_pdf(data_key):
     try:
-
+        time.sleep(2)
         updated_at = str(datetime.now(pytz.timezone(
             'Asia/Jakarta')).strftime('%Y%m%d%H%M%S'))
+
         data = "data:{}".format(data_key)
         redis_data = REDIS_DB.get(data)
         if not redis_data:
