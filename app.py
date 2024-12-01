@@ -111,15 +111,10 @@ def insert_to_redis(id, qr_url, pdf_url, qr_position_x, qr_position_y, api_callb
 
 def process_stemp_pdf(data_key):
     try:
-        time.sleep(2)
         updated_at = str(datetime.now(pytz.timezone(
             'Asia/Jakarta')).strftime('%Y%m%d%H%M%S'))
-
-        data = "data:{}".format(data_key)
-        redis_data = REDIS_DB.get(data)
-        if not redis_data:
-            print(f"Error: Data not found for key {data}")
-            return
+        data = f"data:{data_key}"
+        redis_data = REDIS_DB.hgetall(data)
 
         id = redis_data.get("ID")
         qr_url = redis_data.get("QR_URL")
@@ -130,20 +125,17 @@ def process_stemp_pdf(data_key):
 
         qr_path = generate_qr(qr_url)
         output_pdf_stemped = f"{pdf_stemped}{updated_at}_{id}_qr_stemped.pdf"
-
         stemp_qr(path_source, qr_path, qr_position_x,
                  qr_position_y, output_pdf_stemped)
 
-        # Simulasi penyimpanan ke Redis setelah proses stempel PDF selesai
-        REDIS_DB[data_key]["UPDATED_AT"] = updated_at
-        REDIS_DB[data_key]["PATH_STEMPED"] = output_pdf_stemped
-        REDIS_DB[data_key]["STATUS_STEMPED"] = "SUCCESS"
-        REDIS_DB[data_key]["FLAG"] = "Y"
+        REDIS_DB.hset(data_key, "UPDATED_AT", updated_at)
+        REDIS_DB.hset(data_key, "PATH_STEMPED", output_pdf_stemped)
+        REDIS_DB.hset(data_key, "STATUS_STEMPED", "SUCCESS")
+        REDIS_DB.hset(data_key, "FLAG", "Y")
 
         if api_callback and api_callback.strip():
             callback_url = f"{api_callback}?id={id}"
             callback_response = requests.get(callback_url)
-            print(f"Callback response: {callback_response.status_code}")
 
     except Exception as e:
         print(f"Error: {str(e)}")
@@ -168,8 +160,8 @@ def collect_data():
         insert_to_redis(data_content["ID"], data_content["QR_URL"], data_content["PDF_URL"],
                         data_content["QR_POSITION_X"], data_content["QR_POSITION_Y"], api_callback)
 
-        time.sleep(0.5)
-        process_stemp_pdf(qr_id)
+        thread = threading.Thread(target=process_stemp_pdf, args=(qr_id,))
+        thread.start()
 
         return jsonify({
             "OUT_STAT": "SUCCESS",
@@ -237,7 +229,8 @@ def get_pdf():
         if not data_key:
             return jsonify({"OUT_STAT": "ERROR", "MESSAGE": "DATA_KEY is required"}), 400
 
-        redis_data = REDIS_DB.hgetall(data_key)
+        data = f"data:{data_key}"
+        redis_data = REDIS_DB.hgetall(data)
         if not redis_data:
             return jsonify({"OUT_STAT": "ERROR", "MESSAGE": "Data not found in Redis"}), 404
 
