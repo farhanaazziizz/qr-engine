@@ -50,7 +50,7 @@ def insert_to_redis(id, qr_url, pdf_url, qr_position_x, qr_position_y, api_callb
         "STATUS": "SUCCESS",
         "FLAG": "N",
         "API_CALLBACK": api_callback,
-        "PATH_SOURCE": f"{pdf_source}{created_at}_{id}.pdf",
+        "PATH_SOURCE": f"{pdf_source}{created_at.isoformat()}_{id}.pdf",
         "PATH_STEMPED": "",
         "STATUS_STEMPED": "",
         "CREATED_AT": created_at.isoformat(),
