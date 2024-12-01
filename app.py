@@ -28,7 +28,7 @@ qr_id = str(uuid.uuid4())
 def download_file(id, pdf_url):
     try:
         response = requests.get(pdf_url)
-        output_path = f"{pdf_source}{created_at}_{id}.pdf"
+        output_path = f"{pdf_source}{created_at.isoformat()}_{id}.pdf"
         if response.status_code == 200:
             with open(output_path, "wb") as f:
                 f.write(response.content)
