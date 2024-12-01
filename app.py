@@ -108,6 +108,45 @@ def insert_to_redis(id, qr_url, pdf_url, qr_position_x, qr_position_y, api_callb
     })
 
 
+def process_stemp_pdf(data_key):
+    try:
+
+        updated_at = str(datetime.now(pytz.timezone(
+            'Asia/Jakarta')).strftime('%Y%m%d%H%M%S'))
+        data = "data:{}".format(data_key)
+        redis_data = REDIS_DB.get(data)
+        if not redis_data:
+            print(f"Error: Data not found for key {data}")
+            return
+
+        id = redis_data.get("ID")
+        qr_url = redis_data.get("QR_URL")
+        path_source = redis_data.get("PATH_SOURCE")
+        qr_position_x = float(redis_data.get("QR_POSITION_X"))
+        qr_position_y = float(redis_data.get("QR_POSITION_Y"))
+        api_callback = redis_data.get("API_CALLBACK")
+
+        qr_path = generate_qr(qr_url)
+        output_pdf_stemped = f"{pdf_stemped}{updated_at}_{id}_qr_stemped.pdf"
+
+        stemp_qr(path_source, qr_path, qr_position_x,
+                 qr_position_y, output_pdf_stemped)
+
+        # Simulasi penyimpanan ke Redis setelah proses stempel PDF selesai
+        REDIS_DB[data_key]["UPDATED_AT"] = updated_at
+        REDIS_DB[data_key]["PATH_STEMPED"] = output_pdf_stemped
+        REDIS_DB[data_key]["STATUS_STEMPED"] = "SUCCESS"
+        REDIS_DB[data_key]["FLAG"] = "Y"
+
+        if api_callback and api_callback.strip():
+            callback_url = f"{api_callback}?id={id}"
+            callback_response = requests.get(callback_url)
+            print(f"Callback response: {callback_response.status_code}")
+
+    except Exception as e:
+        print(f"Error: {str(e)}")
+
+
 @app.route('/collect_data', methods=['POST'])
 def collect_data():
     try:
@@ -126,6 +165,10 @@ def collect_data():
         download_file(data_content["ID"], data_content["PDF_URL"])
         insert_to_redis(data_content["ID"], data_content["QR_URL"], data_content["PDF_URL"],
                         data_content["QR_POSITION_X"], data_content["QR_POSITION_Y"], api_callback)
+
+        data_key = qr_id
+        thread = threading.Thread(target=process_stemp_pdf, args=(data_key,))
+        thread.start()
 
         return jsonify({
             "OUT_STAT": "SUCCESS",
