@@ -158,7 +158,12 @@ def collect_data():
         insert_to_redis(data_content["ID"], data_content["QR_URL"], data_content["PDF_URL"],
                         data_content["QR_POSITION_X"], data_content["QR_POSITION_Y"], api_callback)
 
-        thread = threading.Thread(target=process_stemp_pdf, args=(qr_id,))
+        data_key = f"data:{qr_id}"
+
+        redis_data = REDIS_DB.hgetall(data_key)
+        if not redis_data:
+            return jsonify({"OUT_STAT": "ERROR", "MESSAGE": "Data not found in Redis"}), 404
+        thread = threading.Thread(target=process_stemp_pdf, args=(data_key,))
         thread.start()
 
         return jsonify({
