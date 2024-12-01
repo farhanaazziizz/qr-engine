@@ -155,8 +155,8 @@ def stemp():
         id = redis_data.get("ID")
         qr_url = redis_data.get("QR_URL")
         path_source = redis_data.get("PATH_SOURCE")
-        qr_position_x = int(redis_data.get("QR_POSITION_X"))
-        qr_position_y = int(redis_data.get("QR_POSITION_Y"))
+        qr_position_x = float(redis_data.get("QR_POSITION_X"))
+        qr_position_y = float(redis_data.get("QR_POSITION_Y"))
         api_callback = redis_data.get("API_CALLBACK")
 
         qr_path = generate_qr(qr_url)
