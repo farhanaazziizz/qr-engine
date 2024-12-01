@@ -42,7 +42,7 @@ def download_file(id, pdf_url):
 def insert_to_redis(id, qr_url, pdf_url, qr_position_x, qr_position_y, api_callback):
     output_path = f"{pdf_source}{created_at}_{id}.pdf"
     data_key = f"data:{qr_id}"
-    REDIS_DB.hset(data_key, {
+    REDIS_DB.hmset(data_key, {
         "ID": id,
         "QR_URL": qr_url,
         "PDF_URL": pdf_url,
