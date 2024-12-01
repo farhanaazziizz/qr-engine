@@ -113,8 +113,8 @@ def process_stemp_pdf(data_key):
     try:
         updated_at = str(datetime.now(pytz.timezone(
             'Asia/Jakarta')).strftime('%Y%m%d%H%M%S'))
-        data = f"data:{data_key}"
-        redis_data = REDIS_DB.hgetall(data)
+
+        redis_data = REDIS_DB.hgetall(data_key)
 
         id = redis_data.get("ID")
         qr_url = redis_data.get("QR_URL")
@@ -229,8 +229,7 @@ def get_pdf():
         if not data_key:
             return jsonify({"OUT_STAT": "ERROR", "MESSAGE": "DATA_KEY is required"}), 400
 
-        data = f"data:{data_key}"
-        redis_data = REDIS_DB.hgetall(data)
+        redis_data = REDIS_DB.hgetall(data_key)
         if not redis_data:
             return jsonify({"OUT_STAT": "ERROR", "MESSAGE": "Data not found in Redis"}), 404
 
