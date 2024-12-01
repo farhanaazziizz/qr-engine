@@ -179,7 +179,7 @@ def stemp():
         updated_at = str(datetime.now(pytz.timezone(
             'Asia/Jakarta')).strftime('%Y%m%d%H%M%S'))
         data = request.json
-        data_key = data.get("DATA_KEY")
+        data_key = data.get("QR_ID")
 
         if not data_key:
             return jsonify({"OUT_STAT": "ERROR", "MESSAGE": "DATA_KEY is required"}), 400
@@ -258,6 +258,14 @@ def download_pdf(filename):
 
     except Exception as e:
         return jsonify({"OUT_STAT": "ERROR", "MESSAGE": str(e)}), 500
+
+
+@app.route('/check', methods=['POST'])
+def check():
+    data = request.json
+    data_key = data.get("QR_ID")
+
+    process_stemp_pdf(data_key)
 
 
 if __name__ == "__main__":
