@@ -31,7 +31,7 @@ qr_id = str(uuid.uuid4())
 DEFAULT_QR_SIZE = 100
 
 
-def download_file(id, pdf_url):
+def download_file(id: str, pdf_url: str):
     try:
         response = requests.get(pdf_url)
         output_path = f"{pdf_source}{created_at}_{id}.pdf"
@@ -89,7 +89,7 @@ def stemp_qr(pdf_path: str, qr_path: BytesIO, qr_position_x: int, qr_position_y:
         pdf_document.close()
 
 
-def insert_to_redis(id, qr_url, pdf_url, qr_position_x, qr_position_y, api_callback):
+def insert_to_redis(id: str, qr_url: str, pdf_url: str, qr_position_x: float, qr_position_y: float, api_callback: str):
     output_path = f"{pdf_source}{created_at}_{id}.pdf"
     data_key = f"data:{qr_id}"
     REDIS_DB.hmset(data_key, {
@@ -109,7 +109,7 @@ def insert_to_redis(id, qr_url, pdf_url, qr_position_x, qr_position_y, api_callb
     })
 
 
-def process_stemp_pdf(data_key):
+def process_stemp_pdf(data_key: str):
     try:
         updated_at = str(datetime.now(pytz.timezone(
             'Asia/Jakarta')).strftime('%Y%m%d%H%M%S'))
@@ -134,6 +134,10 @@ def process_stemp_pdf(data_key):
         REDIS_DB.hset(data_key, "PATH_STEMPED", output_pdf_stemped)
         REDIS_DB.hset(data_key, "STATUS_STEMPED", "SUCCESS")
         REDIS_DB.hset(data_key, "FLAG", "Y")
+
+        if api_callback and api_callback.strip():
+            callback_url = f"{api_callback}?id={id}"
+            callback_response = requests.get(callback_url)
 
     except Exception as e:
         print(f"Error: {str(e)}")
@@ -260,14 +264,6 @@ def download_pdf(filename):
 
     except Exception as e:
         return jsonify({"OUT_STAT": "ERROR", "MESSAGE": str(e)}), 500
-
-
-@app.route('/check', methods=['POST'])
-def check():
-    data = request.json
-    data_key = data.get("QR_ID")
-
-    process_stemp_pdf(data_key)
 
 
 if __name__ == "__main__":
