@@ -18,10 +18,10 @@ REDIS_DB = redis.StrictRedis(
     decode_responses=True
 )
 
-pdf_source = '/home/lab-1/pdf_source/'
-pdf_stemped = '/home/lab-1/pdf_stemped/'
+pdf_source = './pdf_source/'
+pdf_stemped = './pdf_stemped/'
 created_at = str(datetime.now(pytz.timezone(
-    'Asia/Jakarta')).strftime('%Y-%m-%d-%H%M%S'))
+    'Asia/Jakarta')).strftime('%Y%m%d%H%M%S'))
 qr_id = str(uuid.uuid4())
 
 
