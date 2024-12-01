@@ -168,9 +168,8 @@ def collect_data():
         insert_to_redis(data_content["ID"], data_content["QR_URL"], data_content["PDF_URL"],
                         data_content["QR_POSITION_X"], data_content["QR_POSITION_Y"], api_callback)
 
-        data_key = qr_id
-        thread = threading.Thread(target=process_stemp_pdf, args=(data_key,))
-        thread.start()
+        time.sleep(0.5)
+        process_stemp_pdf(qr_id)
 
         return jsonify({
             "OUT_STAT": "SUCCESS",
