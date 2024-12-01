@@ -115,6 +115,8 @@ def process_stemp_pdf(data_key):
             'Asia/Jakarta')).strftime('%Y%m%d%H%M%S'))
 
         redis_data = REDIS_DB.hgetall(data_key)
+        if not redis_data:
+            return jsonify({"OUT_STAT": "ERROR", "MESSAGE": "Data not found in Redis"}), 404
 
         id = redis_data.get("ID")
         qr_url = redis_data.get("QR_URL")
@@ -132,10 +134,6 @@ def process_stemp_pdf(data_key):
         REDIS_DB.hset(data_key, "PATH_STEMPED", output_pdf_stemped)
         REDIS_DB.hset(data_key, "STATUS_STEMPED", "SUCCESS")
         REDIS_DB.hset(data_key, "FLAG", "Y")
-
-        if api_callback and api_callback.strip():
-            callback_url = f"{api_callback}?id={id}"
-            callback_response = requests.get(callback_url)
 
     except Exception as e:
         print(f"Error: {str(e)}")
@@ -166,7 +164,7 @@ def collect_data():
         return jsonify({
             "OUT_STAT": "SUCCESS",
             "OUT_DATA": {
-                "QR_ID": qr_id
+                "QR_ID": f"data:{qr_id}"
             }
         }), 200
     except Exception as e:
