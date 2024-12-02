@@ -13,5 +13,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Salin seluruh aplikasi Flask ke dalam kontainer
 COPY . /app/
 
+EXPOSE 5000
 # Tentukan perintah untuk menjalankan aplikasi Flask
 CMD ["python", "app.py"]
