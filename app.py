@@ -97,7 +97,15 @@ def stemp_qr(pdf_path: str, qr_path: BytesIO, qr_position_x: int, qr_position_y:
 
 
 def insert_to_redis(qr_id: str, id: str, qr_url: str, pdf_url: str, qr_position_x: float, qr_position_y: float, api_callback: str):
-    output_path = f"{pdf_source}{created_at}_{id}.pdf"
+    #   output_path = f"{pdf_source}{created_at}_{id}.pdf"
+    parsed_url = urlparse(pdf_url)
+    original_filename = parsed_url.path.split("/")[-1]
+
+    if not original_filename:
+        original_filename = f"default_{id}.pdf"
+
+    output_path = f"{pdf_source}{original_filename}"
+
     data_key = f"data:{qr_id}"
     REDIS_DB.hmset(data_key, {
         "ID": id,
