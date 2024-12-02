@@ -62,7 +62,7 @@ def generate_qr(qr_url: str) -> BytesIO:
     return img_byte_array
 
 
-def stemp_qr(pdf_path: str, qr_path: BytesIO, qr_position_x: int, qr_position_y: int, output_pdf_stemped: str):
+def stemp_qr(pdf_path: str, qr_path: BytesIO, qr_position_x: str, qr_position_y: str, output_pdf_stemped: str):
     try:
         pdf_document = fitz.open(pdf_path)
     except Exception as e:
@@ -70,6 +70,8 @@ def stemp_qr(pdf_path: str, qr_path: BytesIO, qr_position_x: int, qr_position_y:
             f"Failed to open PDF file: {pdf_path}. Error: {e}")
 
     try:
+        qr_position_x = float(qr_position_x)
+        qr_position_y = float(qr_position_y)
         for page_num in range(pdf_document.page_count):
             page = pdf_document[page_num]
             page.insert_image(
@@ -89,7 +91,7 @@ def stemp_qr(pdf_path: str, qr_path: BytesIO, qr_position_x: int, qr_position_y:
         pdf_document.close()
 
 
-def insert_to_redis(qr_id: str, id: str, qr_url: str, pdf_url: str, qr_position_x: float, qr_position_y: float, api_callback: str):
+def insert_to_redis(qr_id: str, id: str, qr_url: str, pdf_url: str, qr_position_x: str, qr_position_y: str, api_callback: str):
     output_path = f"{pdf_source}{created_at}_{id}.pdf"
 
     data_key = f"data:{qr_id}"
