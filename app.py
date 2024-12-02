@@ -10,6 +10,7 @@ import qrcode
 import fitz
 import threading
 import time
+from urllib.parse import urlparse
 
 
 app = Flask(__name__)
@@ -32,8 +33,15 @@ DEFAULT_QR_SIZE = 100
 
 def download_file(id: str, pdf_url: str):
     try:
+        parsed_url = urlparse(pdf_url)
+        original_filename = parsed_url.path.split("/")[-1]
+
+        if not original_filename:
+            original_filename = f"default_{id}.pdf"
+
         response = requests.get(pdf_url)
-        output_path = f"{pdf_source}{created_at}_{id}.pdf"
+#        output_path = f"{pdf_source}{created_at}_{id}.pdf"
+        output_path = f"{pdf_source}{original_filename}.pdf"
         if response.status_code == 200:
             with open(output_path, "wb") as f:
                 f.write(response.content)
