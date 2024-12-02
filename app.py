@@ -41,7 +41,7 @@ def download_file(id: str, pdf_url: str):
 
         response = requests.get(pdf_url)
 #        output_path = f"{pdf_source}{created_at}_{id}.pdf"
-        output_path = f"{pdf_source}{original_filename}.pdf"
+        output_path = f"{pdf_source}{original_filename}"
         if response.status_code == 200:
             with open(output_path, "wb") as f:
                 f.write(response.content)
