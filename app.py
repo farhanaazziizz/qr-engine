@@ -33,15 +33,8 @@ DEFAULT_QR_SIZE = 100
 
 def download_file(id: str, pdf_url: str):
     try:
-        parsed_url = urlparse(pdf_url)
-        original_filename = parsed_url.path.split("/")[-1]
-
-        if not original_filename:
-            original_filename = f"default_{id}.pdf"
-
         response = requests.get(pdf_url)
-#        output_path = f"{pdf_source}{created_at}_{id}.pdf"
-        output_path = f"{pdf_source}{original_filename}"
+        output_path = f"{pdf_source}{created_at}_{id}.pdf"
         if response.status_code == 200:
             with open(output_path, "wb") as f:
                 f.write(response.content)
@@ -97,14 +90,7 @@ def stemp_qr(pdf_path: str, qr_path: BytesIO, qr_position_x: int, qr_position_y:
 
 
 def insert_to_redis(qr_id: str, id: str, qr_url: str, pdf_url: str, qr_position_x: float, qr_position_y: float, api_callback: str):
-    #   output_path = f"{pdf_source}{created_at}_{id}.pdf"
-    parsed_url = urlparse(pdf_url)
-    original_filename = parsed_url.path.split("/")[-1]
-
-    if not original_filename:
-        original_filename = f"default_{id}.pdf"
-
-    output_path = f"{pdf_source}{original_filename}"
+    output_path = f"{pdf_source}{created_at}_{id}.pdf"
 
     data_key = f"data:{qr_id}"
     REDIS_DB.hmset(data_key, {
@@ -135,13 +121,20 @@ def process_stemp_pdf(data_key: str):
 
         id = redis_data.get("ID")
         qr_url = redis_data.get("QR_URL")
+        pdf_url = redis_data.get("PDF_URL")
         path_source = redis_data.get("PATH_SOURCE")
         qr_position_x = float(redis_data.get("QR_POSITION_X"))
         qr_position_y = float(redis_data.get("QR_POSITION_Y"))
         api_callback = redis_data.get("API_CALLBACK")
 
+        parsed_url = urlparse(pdf_url)
+        original_filename = parsed_url.path.split("/")[-1]
+
+        if not original_filename:
+            original_filename = f"default_{id}.pdf"
+
         qr_path = generate_qr(qr_url)
-        output_pdf_stemped = f"{pdf_stemped}{updated_at}_{id}_qr_stemped.pdf"
+        output_pdf_stemped = f"{pdf_stemped}{original_filename}"
         stemp_qr(path_source, qr_path, qr_position_x,
                  qr_position_y, output_pdf_stemped)
 
