@@ -27,7 +27,6 @@ pdf_source = './pdf_source/'
 pdf_stemped = './pdf_stemped/'
 created_at = str(datetime.now(pytz.timezone(
     'Asia/Jakarta')).strftime('%Y%m%d%H%M%S'))
-qr_id = str(uuid.uuid4())
 DEFAULT_QR_SIZE = 100
 
 
@@ -89,7 +88,7 @@ def stemp_qr(pdf_path: str, qr_path: BytesIO, qr_position_x: int, qr_position_y:
         pdf_document.close()
 
 
-def insert_to_redis(id: str, qr_url: str, pdf_url: str, qr_position_x: float, qr_position_y: float, api_callback: str):
+def insert_to_redis(qr_id: str, id: str, qr_url: str, pdf_url: str, qr_position_x: float, qr_position_y: float, api_callback: str):
     output_path = f"{pdf_source}{created_at}_{id}.pdf"
     data_key = f"data:{qr_id}"
     REDIS_DB.hmset(data_key, {
@@ -143,9 +142,11 @@ def process_stemp_pdf(data_key: str):
         print(f"Error: {str(e)}")
 
 
+# url disesuaikan jadi collect_data_qr
 @app.route('/collect_data', methods=['POST'])
 def collect_data():
     try:
+        qr_id = str(uuid.uuid4())
         data = request.json
         if not data or "DATA" not in data:
             return jsonify({"OUT_STAT": "ERROR", "MESSAGE": "Invalid request format"}), 400
@@ -159,7 +160,7 @@ def collect_data():
             return jsonify({"OUT_STAT": "ERROR", "MESSAGE": "Missing required fields"}), 400
 
         download_file(data_content["ID"], data_content["PDF_URL"])
-        insert_to_redis(data_content["ID"], data_content["QR_URL"], data_content["PDF_URL"],
+        insert_to_redis(qr_id, data_content["ID"], data_content["QR_URL"], data_content["PDF_URL"],
                         data_content["QR_POSITION_X"], data_content["QR_POSITION_Y"], api_callback)
 
         data_key = f"data:{qr_id}"
